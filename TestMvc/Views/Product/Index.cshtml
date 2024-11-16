@@ -1,0 +1,209 @@
+﻿@model IEnumerable<Domain.DTO.ListDto>
+
+@{
+    ViewData["Title"] = "Products";
+}
+<style>
+    /* General button styling */
+    .styled-button {
+        background-color: #4CAF50; /* Green */
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 16px;
+        margin: 4px 2px;
+        transition-duration: 0.4s;
+        cursor: pointer;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Hover effects */
+    .styled-button:hover {
+        background-color: white;
+        color: #4CAF50;
+        border: 2px solid #4CAF50;
+    }
+
+    /* Disabled button styling */
+    .styled-button:disabled {
+        background-color: #d3d3d3;
+        color: #ffffff;
+        cursor: not-allowed;
+        border: none;
+    }
+
+    /* Page link styling */
+    .page-link {
+        background-color: #f1f1f1;
+        border: 1px solid #ccc;
+        padding: 10px 15px;
+        margin: 0 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .page-link:hover {
+        background-color: #4CAF50;
+        color: white;
+    }
+
+    /* Active page styling */
+    .page-link.active {
+        background-color: #007bff;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<h1>Products</h1>
+
+<!-- Create Button -->
+<a href="@Url.Action("Create", "Product")" class="styled-button">Create Product</a>
+
+<!-- Record Count Display -->
+<p id="recordInfo"></p>
+<div class="container-fluid">
+    <div class="row align-items-center">
+        <div class="col-4">
+            <select id="change" class="form-select">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <table id="productTable" class="table table-bordered mt-1">
+    <thead>
+        <tr style="background-color:#428bca">
+            <th style="color:white">Product Id</th>
+            <th style="color:white">Name</th>
+            <th style="color:white">SKU</th>
+            <th style="color:white">Category</th>
+            <th style="color:white">Base Price</th>
+            <th style="color:white">MRP</th>
+            <th style="color:white">Description</th>
+            <th style="color:white">Currency</th>
+            <th style="color:white">Manufactured Date</th>
+            <th style="color:white">Expire Date</th>
+            <th style="color:white">Actions</th>
+        </tr>
+    </thead>
+    <tbody id="productBody">
+        <!-- Products will be dynamically inserted here -->
+    </tbody>
+</table>
+
+<div id="paginationControls" style="display: flex; align-items: center;">
+    <button id="prevPage" class="styled-button" disabled>Previous</button>
+    <span id="pageLinks" style="display: flex; gap: 5px; margin: 0 10px;"></span>
+    <button id="nextPage" class="styled-button">Next</button>
+</div>
+
+@section Scripts {
+    <script>
+        let currentPage = 1;
+        const pageSize = 10;
+        let search = '';
+        
+        function fetchProducts(page, pageSize, search) {
+                     $.get(`https://localhost:7153/api/Product/?pageNumber=${page}&pageSize=${pageSize}&search=${search}`, function (data) {
+            $('#productBody').empty(); 
+                // Check if data.result is not null and has products
+                if (data.result && data.result.length > 0) {
+                    data.result.forEach(product => {
+                       
+                        
+
+                        $('#productBody').append(`<tr>
+                            <td>${product.productId}</td>
+                            <td>${product.name}</td>
+                            <td>${product.sku}</td>
+                            <td>${product.category}</td>
+                            <td>${product.basePrice}</td>
+                            <td>${product.mrp}</td>
+                            <td>${product.description}</td>
+                            <td>${product.currency}</td>
+                            <td>${product.manufacturedDate}</td>
+                                <td>${product.expireDate}</td>
+                               <td>
+   <a href="/Product/Edit/${product.productId}" class="btn btn-warning">Edit</a>
+                                        <a href="/Product/Delete/${product.productId}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
+         </td>
+
+                        </tr>`);
+                    });
+                } else {
+                    $('#productBody').append(`<tr>
+                        <td colspan="11" class="text-center">No Record Found</td>
+                    </tr>`);
+                }
+
+                // Update pagination and record information
+                updatePaginationControls(data.pageNumber, pageSize, data.count);
+                updateRecordInfo(data.pageNumber, pageSize, data.count);
+            });
+        }
+
+        function updatePaginationControls(currentPage, pageSize, totalItems) {
+            const totalPages = Math.ceil(totalItems / pageSize);
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            $('#pageLinks').empty();
+
+            // Ensure the start and end page are within bounds
+            if (endPage - startPage < maxVisiblePages - 1) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            for (let page = startPage; page <= endPage; page++) {
+                const pageLink = `<button class="page-link ${page === currentPage ? 'active' : ''}" data-page="${page}" style="padding: 5px 10px;">${page}</button>`;
+                $('#pageLinks').append(pageLink);
+            }
+
+            $('#prevPage').prop('disabled', currentPage === 1);
+            $('#nextPage').prop('disabled', currentPage >= totalPages);
+        }
+
+        function updateRecordInfo(currentPage, pageSize, totalItems) {
+            const startRecord = (currentPage - 1) * pageSize + 1;
+            const endRecord = Math.min(currentPage * pageSize, totalItems);
+            $('#recordInfo').text(`Showing ${startRecord}–${endRecord} of ${totalItems} records`);
+        }
+
+        $(document).ready(function () {
+            fetchProducts(currentPage, $('#change').val(), $('#searchdata').val());
+
+            $('#prevPage').click(function () {
+                if (currentPage > 1) {
+                    currentPage--;
+                    fetchProducts(currentPage, $('#change').val(), $('#searchdata').val());
+                }
+            });
+
+            $('#nextPage').click(function () {
+                currentPage++;
+                fetchProducts(currentPage, $('#change').val(), $('#searchdata').val());
+            });
+
+            $('#paginationControls').on('click', '.page-link', function () {
+                const page = $(this).data('page');
+                currentPage = page;
+                fetchProducts(currentPage, $('#change').val(), $('#searchdata').val());
+            });
+        });
+
+        $('#change').change(function(){
+            fetchProducts(currentPage, $('#change').val(), $('#searchdata').val());
+        });
+
+        $('#searchdata').on('input', function () {
+            fetchProducts(currentPage, $('#change').val(), $(this).val());
+        });
+    </script>
+}
