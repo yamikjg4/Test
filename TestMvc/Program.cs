@@ -1,29 +1,30 @@
 using Utility;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
-builder.Services.ConfigureDependencies();
-builder.Services.AddHttpClient();
+// Configure Services
+builder.Services.AddControllersWithViews(); // Adds MVC support.
+builder.Services.ConfigureDependencies();   // Registers dependencies from a custom method.
+builder.Services.AddHttpClient();          // Configures HttpClient services.
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure Middleware
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    app.UseExceptionHandler("/Home/Error"); // Use custom error page in production.
+    app.UseHsts();                          // Enforce HSTS for production.
 }
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseHttpsRedirection();   // Redirect HTTP requests to HTTPS.
+app.UseStaticFiles();        // Serve static files like CSS, JS, and images.
 
-app.UseRouting();
+app.UseRouting();            // Enable routing middleware.
+app.UseAuthorization();      // Enable authorization middleware.
 
-app.UseAuthorization();
-
+// Map default route for MVC.
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Product}/{action=Index}/{id?}");
 
-app.Run();
+app.Run(); // Starts the application.
