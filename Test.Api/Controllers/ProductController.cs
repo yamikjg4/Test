@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using System.Net;
 using System.Linq;
+using System.Collections.Concurrent;
 
 namespace Test.Api.Controllers
 {
@@ -19,6 +20,7 @@ namespace Test.Api.Controllers
         private readonly IProductRepo _repo;
         private readonly IConfiguration _config;
         private string cachekey;
+        private static readonly ConcurrentDictionary<string, bool> _cacheKeys = new();
 
         public ProductController(IMemoryCache cache, IProductRepo repo, IConfiguration config)
         {
@@ -49,6 +51,7 @@ namespace Test.Api.Controllers
                 response.PageNumber = pageNumber;
                 // Save data in cache
                 _cache.Set(cachekey, response, cacheOptions);
+                _cacheKeys.TryAdd(cachekey, true); // Track the key
             }
             return Ok(response);
         }
@@ -66,7 +69,12 @@ namespace Test.Api.Controllers
                 int id = await _repo.InsertProductAsync(model);
                 if (id > 0)
                 {
-                    _cache.Remove(cachekey + $"?pageNumber=1&pageSize=10");
+                    foreach (var key in _cacheKeys.Keys)
+                    {
+                        _cache.Remove(key); // Remove each cached item
+                    }
+
+                    _cacheKeys.Clear();
                     return CreatedAtAction(nameof(GetProducts), new { pageNumber = 1, pageSize = 10 });
                 }
                 else
@@ -119,7 +127,12 @@ namespace Test.Api.Controllers
                 int id = await _repo.UpdateProductAsync(model);
                 if (id > 0)
                 {
-                    _cache.Remove(cachekey + $"?pageNumber=1&pageSize=10");
+                    foreach (var key in _cacheKeys.Keys)
+                    {
+                        _cache.Remove(key); // Remove each cached item
+                    }
+
+                    _cacheKeys.Clear();
                     return NoContent();
                 }
                 else
@@ -135,7 +148,12 @@ namespace Test.Api.Controllers
             int data = await _repo.DeleteProductAsync(id);
             if (data > 0)
             {
-                _cache.Remove(cachekey + $"?pageNumber=1&pageSize=10");
+                foreach (var key in _cacheKeys.Keys)
+                {
+                    _cache.Remove(key); // Remove each cached item
+                }
+
+                _cacheKeys.Clear();
                 return NoContent();
             }
             else
