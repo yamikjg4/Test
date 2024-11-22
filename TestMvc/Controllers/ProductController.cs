@@ -1,5 +1,4 @@
-﻿using BAL.Interface.ProductRepo;
-using Domain.DTO;
+﻿using Domain.DTO;
 using Domain.Enum;
 using Domain.Model;
 using Microsoft.AspNetCore.Mvc;
@@ -13,14 +12,14 @@ namespace TestMvc.Controllers
 {
     public class ProductController : Controller
     {
-        private readonly IProductRepo _productrepo;
+      
         private readonly IConfiguration configuration;
         private readonly HttpClient _httpClient;
         private readonly string apiurl;
 
-        public ProductController(IProductRepo productrepo, IConfiguration configuration, HttpClient httpClient)
+        public ProductController( IConfiguration configuration, HttpClient httpClient)
         {
-            _productrepo = productrepo;
+          
             this.configuration = configuration;
             _httpClient = httpClient;
             apiurl = configuration.GetValue<string>("ApiUrl:localhostApiUrl");

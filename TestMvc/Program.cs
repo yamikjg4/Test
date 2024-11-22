@@ -1,10 +1,7 @@
-using Utility;
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Configure Services
 builder.Services.AddControllersWithViews(); // Adds MVC support.
-builder.Services.ConfigureDependencies();   // Registers dependencies from a custom method.
 builder.Services.AddHttpClient();          // Configures HttpClient services.
 
 var app = builder.Build();
