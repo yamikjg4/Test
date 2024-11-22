@@ -3,108 +3,138 @@
 @{
     ViewData["Title"] = "Create";
 }
+<style>
+    h1 {
+    color: #333;
+    font-weight: bold;
+}
 
-<h1>Create</h1>
+.card {
+    border-radius: 12px;
+    border: none;
+    background-color: #f9f9f9;
+}
 
-<div class="row">
-    <div class="col-md-12">
-        <form asp-action="Create">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group" style="display:none;">
-                <label asp-for="ProductId" class="control-label"></label>
-                <input asp-for="ProductId" class="form-control" />
-                <span asp-validation-for="ProductId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="SKU" class="control-label"></label>
-                <input id="sk1" class="form-control"  readonly />
-                <input asp-for="SKU" class="form-control" hidden />
-                <button type="button" id="generateSku" class="btn btn-primary mt-2">Generate SKU</button>
-                <span asp-validation-for="SKU" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Category" class="control-label"></label>
-                <select class="form-control" id="Category"  asp-for="Category">
-                    <option value="">Select Category</option>
-                    @foreach (var category in ViewData["CategoryList"] as IEnumerable<Domain.DTO.CategoryDTO>)
-                    {
-                        <option value="@category.CategoryID">
-                            @category.CategoryName
-                        </option>
-                    }
-                </select>
-                <span asp-validation-for="Category" class="text-danger"></span>
+.card-body {
+    padding: 2rem;
+}
 
-               
-            </div>
-            <div class="form-group">
-                <label asp-for="BasePrice" class="control-label"></label>
-                <input asp-for="BasePrice" class="form-control" />
-                <span asp-validation-for="BasePrice" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="MRP" class="control-label"></label>
-                <input asp-for="MRP" class="form-control" />
-                <span asp-validation-for="MRP" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <textarea asp-for="Description" class="form-control" ></textarea>
-                
-            </div>
-            <div class="form-group">
-                <label asp-for="Currency" class="control-label"></label>
-                               <select class="form-control" asp-for="Currency">
-            <option value="">Select Currency</option>
-              
-                    @foreach (var currency in ViewData["Currencies"] as List<Domain.Enum.CurrencyEnum>)
-            {
-                        <option value="@((int)currency)">@currency</option>
-                    }
-        </select>
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+}
 
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
 
-                <span asp-validation-for="Currency" class="text-danger"></span>
-            </div>
-            
-            <div class="form-group">
-                <label asp-for="ExpireDate" class="control-label"></label>
-                <input asp-for="ExpireDate" class="form-control" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+input, select, textarea {
+    border-radius: 6px !important;
+}
+</style>
 
-                <span asp-validation-for="ExpireDate" class="text-danger"></span>
+<h1 class="text-center my-4">Create Product</h1>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <div class="mb-3" style="display:none;">
+                        <label asp-for="ProductId" class="form-label"></label>
+                        <input asp-for="ProductId" class="form-control" />
+                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label fw-bold">Product Name</label>
+                        <input asp-for="Name" class="form-control" placeholder="Enter product name" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="SKU" class="form-label fw-bold">SKU</label>
+                        <div class="input-group">
+                            <input id="sk1" class="form-control" readonly placeholder="Generated SKU" />
+                            <input asp-for="SKU" class="form-control" hidden />
+                            <button type="button" id="generateSku" class="btn btn-outline-primary">Generate SKU</button>
+                        </div>
+                        <span asp-validation-for="SKU" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Category" class="form-label fw-bold">Category</label>
+                        <select class="form-select" id="Category" asp-for="Category">
+                            <option value="">Select Category</option>
+                            @foreach (var category in ViewData["CategoryList"] as IEnumerable<Domain.DTO.CategoryDTO>)
+                            {
+                                <option value="@category.CategoryID">
+                                    @category.CategoryName
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="Category" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="BasePrice" class="form-label fw-bold">Base Price</label>
+                        <input asp-for="BasePrice" class="form-control" placeholder="Enter base price" />
+                        <span asp-validation-for="BasePrice" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="MRP" class="form-label fw-bold">MRP</label>
+                        <input asp-for="MRP" class="form-control" placeholder="Enter MRP" />
+                        <span asp-validation-for="MRP" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter product description"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Currency" class="form-label fw-bold">Currency</label>
+                        <select class="form-select" asp-for="Currency">
+                            <option value="">Select Currency</option>
+                            @foreach (var currency in ViewData["Currencies"] as List<Domain.Enum.CurrencyEnum>)
+                            {
+                                <option value="@((int)currency)">@currency</option>
+                            }
+                        </select>
+                        <span asp-validation-for="Currency" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="ExpireDate" class="form-label fw-bold">Expire Date</label>
+                        <input asp-for="ExpireDate" class="form-control" type="date" min="@DateTime.Now.AddDays(1).ToString("yyyy-MM-dd")" />
+                        <span asp-validation-for="ExpireDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary px-4">Create</button>
+                    </div>
+                </form>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-
-
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
 <script>
     // Function to generate a random 6-digit SKU and disable the input field
-    document.getElementById('generateSku').addEventListener('click', function() {
-        // Generate a random 6-digit number for SKU
-        var randomSku = 'SKU'; // 6-digit random number
-        var no = Math.floor(100000 + Math.random() * 900000);
-        randomSku = no;
-        // Set the value of the SKU input field
+    document.getElementById('generateSku').addEventListener('click', function () {
+        var randomSku =  Math.floor(100000 + Math.random() * 900000);
         document.getElementById('sk1').value = randomSku;
         document.getElementById('SKU').value = randomSku;
-
-        // Disable the SKU input field after generating the number
         document.getElementById('sk1').disabled = true;
-
-        // Optional: Disable the button after generating the SKU to prevent further clicks
         document.getElementById('generateSku').disabled = true;
     });
 </script>

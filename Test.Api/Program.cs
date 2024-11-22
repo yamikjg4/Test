@@ -15,7 +15,10 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
-
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.AddServerHeader = false; // Disable 'Server' header
+});
 // Enable response compression.
 builder.Services.AddResponseCompression();
 
@@ -39,12 +42,25 @@ app.UseResponseCompression();
 
 // Configure CORS policy.
 app.UseCors(corsBuilder =>
-    corsBuilder.WithOrigins("https://localhost:7053") // Allow requests from a specific origin.
+    corsBuilder.WithOrigins("https://localhost:7053", "http://localhost:5071") // Allow requests from a specific origin.
                .AllowAnyMethod()
                .AllowAnyHeader());
 
 // Map routes and endpoints.
-app.UseAuthorization();
+
+
+app.Use(async (context, next) =>
+{
+    // Remove all response headers
+    context.Response.Headers.Remove("Strict-Transport-Security");
+    context.Response.Headers.Remove("X-Frame-Options");
+    context.Response.Headers.Remove("Access-Control-Allow-Origin");
+    context.Response.Headers.Remove("Content-Type");
+
+    await next();
+});
+
+
 app.MapControllers();
 
 // Run the app.
