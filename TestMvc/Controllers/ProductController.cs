@@ -17,7 +17,7 @@ namespace TestMvc.Controllers
         private readonly HttpClient _httpClient;
         private readonly string apiurl;
 
-        public ProductController( IConfiguration configuration, HttpClient httpClient)
+        public ProductController(IConfiguration configuration, HttpClient httpClient)
         {
           
             this.configuration = configuration;
