@@ -24,7 +24,7 @@ namespace TestMvc.Controllers
             _httpClient = httpClient;
             apiurl = configuration.GetValue<string>("ApiUrl:localhostApiUrl");
         }
-
+        
         public IActionResult Index()
         {
            
@@ -32,8 +32,18 @@ namespace TestMvc.Controllers
            
             return View(lst);
         }
-        
 
+        public async Task<JsonResult> GetResult(PaginationDto page)
+        {
+            var response = await _httpClient.GetAsync($"{apiurl}api/Product/GetProducts?pageNumber={page.pageNumber}&pageSize={page.pageSize}");
+            if (response.IsSuccessStatusCode)
+            {
+                var product = await response.Content.ReadAsStringAsync();
+                //var product = JsonConvert.DeserializeObject<ApiResponse>(content);
+                return Json( product );
+            }
+            return Json(new { });
+        }
         public async Task<IActionResult> Create()
         {
             var data2 = await _httpClient.GetAsync($"{apiurl}api/Category");
@@ -83,7 +93,7 @@ namespace TestMvc.Controllers
             
             var data2 = await _httpClient.GetAsync($"{apiurl}api/Category");
             
-            if(  data2.IsSuccessStatusCode)
+            if(data2.IsSuccessStatusCode)
             {
                
                 ViewData["Currencies"] = Enum.GetValues(typeof(CurrencyEnum)).Cast<CurrencyEnum>().ToList();

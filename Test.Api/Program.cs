@@ -15,12 +15,15 @@ builder.Services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateDefaults.AuthenticationScheme)
+                .AddNegotiate(); // Use Negotiate Authentication
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.AddServerHeader = false; // Disable 'Server' header
 });
+builder.Services.AddAuthentication(Microsoft.AspNetCore.Server.IISIntegration.IISDefaults.AuthenticationScheme);
 // Enable response compression.
-builder.Services.AddResponseCompression();
+//builder.Services.AddResponseCompression();
 
 // Build the app.
 var app = builder.Build();
@@ -30,35 +33,48 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+    var handler = new HttpClientHandler()
+    {
+        // Disable SSL certificate validation (for development/testing)
+        ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+    };
 
-app.UseHttpsRedirection();
+    var client = new HttpClient(handler);
+
+    var response = await client.GetAsync("https://example.com");
+
+}
+else if (app.Environment.IsProduction())
+{
+    //app.UseHttpsRedirection();
+}
 
 // Add custom middleware.
 app.UseMiddleware<ExceptionMiddelware>();
 
 // Enable response compression middleware.
-app.UseResponseCompression();
+//app.UseResponseCompression();
+
+
 
 // Configure CORS policy.
 app.UseCors(corsBuilder =>
-    corsBuilder.WithOrigins("https://localhost:7053", "http://localhost:5071") // Allow requests from a specific origin.
-               .AllowAnyMethod()
-               .AllowAnyHeader());
+    corsBuilder.WithOrigins("https://localhost:7053", "http://localhost:5071", "http://localhost:4200") // Allow requests from a specific origin.
+                
+                .AllowAnyMethod()
+               .AllowAnyHeader()
+               .AllowCredentials()
+               );
 
 // Map routes and endpoints.
+app.UseRouting();
+app.UseHsts(); // HTTP Strict Transport Security
+app.UseXContentTypeOptions(); // Prevents browsers from interpreting files as a different MIME type
+app.UseReferrerPolicy(policy => policy.NoReferrer()); // Prevents sending the Referer header
+app.UseXXssProtection(options => options.EnabledWithBlockMode()); // Enable XSS protection and block suspicious content
+app.UseXfo(options => options.Deny()); // Prevents the site from being framed
 
 
-app.Use(async (context, next) =>
-{
-    // Remove all response headers
-    context.Response.Headers.Remove("Strict-Transport-Security");
-    context.Response.Headers.Remove("X-Frame-Options");
-    context.Response.Headers.Remove("Access-Control-Allow-Origin");
-    context.Response.Headers.Remove("Content-Type");
-
-    await next();
-});
 
 
 app.MapControllers();

@@ -31,9 +31,9 @@ namespace Test.Api.Controllers
             cachekey = _config.GetValue<string>("Caches:ProductCache");
         }
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [HttpGet]
+        [HttpGet("GetProducts")]
 
-        public async Task<ActionResult<ApiResponse>> GetProducts(int pageNumber = 1, int pageSize = 10)
+        public async Task<ActionResult<ApiResponse>> GetProducts( int pageNumber=1,int pageSize=10)
         {
             cachekey = cachekey + $"?pageNumber={pageNumber}&pageSize={pageSize}";
             if (!_cache.TryGetValue(cachekey, out response))

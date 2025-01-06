@@ -67,17 +67,17 @@
 <!-- Record Count Display -->
 <p id="recordInfo"></p>
 <div class="container-fluid">
-    <div class="row align-items-center">
-        <div class="col-4">
-            <select id="change" class="form-select">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-            </select>
-        </div>
-        <table id="productTable" class="table table-bordered mt-1">
-    <thead>
+<div class="row align-items-center">
+    <div class="col-4">
+        <select id="change" class="form-select">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+    <table id="productTable" class="table table-bordered mt-1">
+        <thead>
         <tr style="background-color:#428bca">
             <th style="color:white">Product Id</th>
             <th style="color:white">Name</th>
@@ -91,62 +91,92 @@
             <th style="color:white">Expire Date</th>
             <th style="color:white">Actions</th>
         </tr>
-    </thead>
-    <tbody id="productBody">
+        </thead>
+        <tbody id="productBody">
         <!-- Products will be dynamically inserted here -->
-    </tbody>
-</table>
+        </tbody>
+    </table>
 
-<div id="paginationControls" style="display: flex; align-items: center;">
-    <button id="prevPage" class="styled-button" disabled>Previous</button>
-    <span id="pageLinks" style="display: flex; gap: 5px; margin: 0 10px;"></span>
-    <button id="nextPage" class="styled-button">Next</button>
+    <div id="paginationControls" style="display: flex; align-items: center;">
+        <button id="prevPage" class="styled-button" disabled>Previous</button>
+        <span id="pageLinks" style="display: flex; gap: 5px; margin: 0 10px;"></span>
+        <button id="nextPage" class="styled-button">Next</button>
+    </div>
 </div>
-
+</div>
 @section Scripts {
     <script>
         let currentPage = 1;
         const pageSize = 10;
         let search = '';
-        
-        function fetchProducts(page, pageSize, search) {
-                     $.get(`https://localhost:7153/api/Product/?pageNumber=${page}&pageSize=${pageSize}&search=${search}`, function (data) {
-            $('#productBody').empty(); 
-                // Check if data.result is not null and has products
-                if (data.result && data.result.length > 0) {
-                    data.result.forEach(product => {
-                       
-                        
 
-                        $('#productBody').append(`<tr>
-                            <td>${product.productId}</td>
-                            <td>${product.name}</td>
-                            <td>${product.sku}</td>
-                            <td>${product.category}</td>
-                            <td>${product.basePrice}</td>
-                            <td>${product.mrp}</td>
-                            <td>${product.description}</td>
-                            <td>${product.currency}</td>
-                            <td>${product.manufacturedDate}</td>
-                                <td>${product.expireDate}</td>
-                               <td>
-   <a href="/Product/Edit/${product.productId}" class="btn btn-warning">Edit</a>
-                                        <a href="/Product/Delete/${product.productId}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
-         </td>
+                function fetchProducts(page, pageSize, search) {
+                    // Ensure pageSize is a valid integer and sanitize search input
+                    if (isNaN(page) || isNaN(pageSize)) {
+                        alert('Invalid page number or page size');
+                        return;
+                    }
 
-                        </tr>`);
+                    // Sanitize search input (optional but recommended)
+                  
+                    // Construct the secure HTTPS request
+                    
+                    // Create the request payload with data in the body
+                    const requestData = {
+                        pageNumber: page,
+                        pageSize: pageSize,
+                       // Send the search query in the body
+                    };
+
+                    // Make the POST request using jQuery
+                    $.ajax({
+                        url: '/Product/GetResult',         // Use HTTPS URL to ensure secure communication
+                        type: 'POST',        // Change to POST method
+                        contentType: 'application/json', // Send as JSON
+                        data: JSON.stringify(requestData), // Send data in the body of the request
+                        success: function (product) {
+                            const prd=JSON.parse(product);
+                           
+                            $('#productBody').empty();
+                           
+                            // Check if data.result is not null and has products
+                            if (prd.result && prd.result.length > 0) {
+                                prd.result.forEach(product => {
+                                    $('#productBody').append(`<tr>
+                                        <td>${product.productId}</td>
+                                        <td>${product.name}</td>
+                                        <td>${product.sku}</td>
+                                        <td>${product.category}</td>
+                                        <td>${product.basePrice}</td>
+                                        <td>${product.mrp}</td>
+                                        <td>${product.description}</td>
+                                        <td>${product.currency}</td>
+                                        <td>${product.manufacturedDate}</td>
+                                        <td>${product.expireDate}</td>
+                                        <td>
+                                            <a href="/Product/Edit/${product.productId}" class="btn btn-warning">Edit</a>
+                                            <a href="/Product/Delete/${product.productId}" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this item?');">Delete</a>
+                                        </td>
+                                    </tr>`);
+                                });
+                            } else {
+                                $('#productBody').append(`<tr>
+                                    <td colspan="11" class="text-center">No Record Found</td>
+                                </tr>`);
+                            }
+
+                            // Update pagination and record information
+                            updatePaginationControls(prd.pageNumber, pageSize, prd.count);
+                            updateRecordInfo(prd.pageNumber, pageSize, prd.count);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("Error fetching products:", status, error);
+                            alert("An error occurred while fetching products. Please try again.");
+                        }
                     });
-                } else {
-                    $('#productBody').append(`<tr>
-                        <td colspan="11" class="text-center">No Record Found</td>
-                    </tr>`);
                 }
 
-                // Update pagination and record information
-                updatePaginationControls(data.pageNumber, pageSize, data.count);
-                updateRecordInfo(data.pageNumber, pageSize, data.count);
-            });
-        }
+
 
         function updatePaginationControls(currentPage, pageSize, totalItems) {
             const totalPages = Math.ceil(totalItems / pageSize);

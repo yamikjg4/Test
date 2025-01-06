@@ -13,7 +13,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utility", "Utility\Utility.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Domain", "Domain\Domain.csproj", "{B28B2459-08C2-4317-8F20-63A6B5A2F807}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.Api", "Test.Api\Test.Api.csproj", "{DBBC7514-E48F-4B3A-9EFE-58C556161063}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Api", "Test.Api\Test.Api.csproj", "{DBBC7514-E48F-4B3A-9EFE-58C556161063}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
