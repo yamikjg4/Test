@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Test.Api.Controllers
@@ -13,10 +14,15 @@ namespace Test.Api.Controllers
         public IActionResult GetUsername()
         
         {
-            /*var windowsIdentity = WindowsIdentity.GetCurrent();
-            var username = windowsIdentity.Name; // Get the full // Fetch Windows username (e.g., DOMAIN\username)*/
-            var username = HttpContext.User.Identity?.Name ?? "Unknown User";
-            return Ok(new { username });
+           
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrEmpty(username))
+            {
+                return Unauthorized("Username not found.");
+            }
+
+            return Ok(new { Username = username });
         }
 
 
