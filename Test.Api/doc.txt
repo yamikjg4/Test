@@ -1,0 +1,52 @@
+﻿//Program Cs
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Negotiate;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services for Windows Authentication
+builder.Services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+    .AddNegotiate()
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = "YourIssuer", // Replace with your issuer
+            ValidAudience = "YourAudience", // Replace with your audience
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YourSuperSecretKey")) // Replace with your secret key
+        };
+    });
+
+// Add Authorization policies
+builder.Services.AddAuthorization(options =>
+{
+    // Policy to require Windows Authentication
+    options.AddPolicy("WindowsPolicy", policy =>
+        policy.RequireAuthenticatedUser().AddAuthenticationSchemes(NegotiateDefaults.AuthenticationScheme));
+    
+    // Policy to require JWT Authentication
+    options.AddPolicy("JwtPolicy", policy =>
+        policy.RequireAuthenticatedUser().AddAuthenticationSchemes(JwtBearerDefaults.AuthenticationScheme));
+});
+
+var app = builder.Build();
+
+app.UseAuthentication(); // Enable Authentication Middleware
+app.UseAuthorization();  // Enable Authorization Middleware
+
+app.MapControllers();
+
+app.Run();
+
+"iisSettings": {
+  "windowsAuthentication": true,
+  "anonymousAuthentication": false
+}
+
+ [Authorize(Policy = "WindowsPolicy")]
+   [Authorize(Policy = "JwtPolicy")]
